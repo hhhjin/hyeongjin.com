@@ -1,0 +1,16 @@
+import { createFileRoute, notFound } from "@tanstack/react-router";
+import { getPlaygroundEntry } from "@/playground/registry";
+
+export const Route = createFileRoute("/playground/$slug")({
+	loader: ({ params }) => {
+		const entry = getPlaygroundEntry(params.slug);
+		if (!entry) throw notFound();
+		return { entry };
+	},
+	component: PlaygroundDetailPage,
+});
+
+function PlaygroundDetailPage() {
+	const { entry } = Route.useLoaderData();
+	return entry.Component;
+}

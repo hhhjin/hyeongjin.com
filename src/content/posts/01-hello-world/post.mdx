@@ -1,0 +1,150 @@
+---
+title: How can a motion component run an exit animation when it unmounts?
+summary: Why Framer Motion can animate elements out even after React removes them, and how AnimatePresence makes that possible.
+date: 2026-03-22,
+draft: true
+---
+
+import { ExitExample, ExitPresenceComparison } from "./components";
+import { CodeBlock } from "../../shared/components/code-block";
+
+When a React component unmounts, its DOM is usually torn down right away. So how does Motion still show exit animations after unmount? Here is how that works, step by step through the code.
+
+
+<ExitExample />
+
+### AnimatePresence
+
+Why do we need `AnimatePresence`?
+What happens if we leave it out?
+
+<ExitPresenceComparison />
+
+The `motion` node drops out of the tree as soon as `open` becomes false, so the `exit` transition never runs—toggle it off and the content vanishes immediately. That is why `AnimatePresence` matters.
+
+---
+
+What does `AnimatePresence` do?
+
+It keeps track of children that are leaving and waits until they have all finished their exit animations.
+
+Here is a minimal sketch of `AnimatePresence`.
+
+```jsx
+function PresenceChild({children, isPresent}) {
+  return <div>{children}</div>
+}
+
+function AnimatePresence({children}) {
+  const presentChildren = children
+  const presentKeys = presentChildren.map(child => child.key)
+
+  const [renderedChildren, setRenderedChildren] = useState(presentChildren)
+
+  return (
+    <>
+      {renderedChildren.map((child) => {
+        const key = child.key
+        
+        const isPresent = presentKeys.includes(key)
+
+        return <PresenceChild key={child.key} isPresent={isPresent}>{child}</PresenceChild>
+      })}
+    </>
+  )
+}
+```
+
+Even when a child unmounts, `AnimatePresence` still holds onto the previous set of children, so the UI does not jump.
+
+```jsx
+function AnimatePresence({ children }) {
+  const presentChildren = children
+  const presentKeys = presentChildren.map(child => child.key)
+
+  const pendingPresentChildren = useRef(presentChildren)
+  const exitComplete = useMemo(() => new Map(), [])
+
+  const [diffedChildren, setDiffedChildren] = useState(presentChildren)
+  const [renderedChildren, setRenderedChildren] = useState(presentChildren)
+
+  useEffect(() => {
+    pendingPresentChildren.current = presentChildren
+
+    for (let i = 0; i < renderedChildren.length; i++) {
+      const key = renderedChildren[i].key
+
+      if (!presentKeys.includes(key)) {
+        if (exitComplete.get(key) !== true) {
+          exitComplete.set(key, false)
+        }
+      } else {
+        exitComplete.delete(key)
+      }
+    }
+  }, [renderedChildren, presentChildren])
+
+  const exitingChildren = []
+
+  if (presentChildren !== diffedChildren) {
+    let nextChildren = [...presentChildren]
+
+    for (let i = 0; i < renderedChildren.length; i++) {
+      const child = renderedChildren[i]
+      const key = child.key
+
+      if (!presentKeys.includes(key)) {
+        nextChildren.splice(i, 0, child)
+        exitingChildren.push(child)
+      }
+    }
+
+    setRenderedChildren(nextChildren)
+    setDiffedChildren(presentChildren)
+
+    return null
+  }
+
+  const nextKeys = nextChildren.map((child) => child.key)
+
+  return (
+    <>
+      {renderedChildren.map((child) => {
+        const isPresent = presentKeys.includes(child.key)
+
+        const onExit = () => {
+          if (exitingComponents.current.has(key)) {
+            return
+          }
+
+          if (exitComplete.has(key)) {
+            exitingComponents.current.add(key)
+            exitComplete.set(key, true)
+          } else {
+            return
+          }
+
+          let isEveryExitComplete = true
+          exitComplete.forEach((isExitComplete) => {
+            if (!isEveryExitComplete) isEveryExitComplete = false
+          })
+
+          if (isEveryExitComplete) {
+            setRenderedChildren(pendingPresentChildren.current)
+          }
+        }
+
+        return (
+          <PresenceChild
+            key={child.key}
+            isPresent={isPresent}
+            onExitComplete={isPresent ? undefined : onExit}
+          >
+            {child}
+          </PresenceChild>
+        )
+      })}
+    </>
+  )
+}
+```

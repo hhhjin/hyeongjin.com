@@ -1,0 +1,14 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"meta_default_title": "HyeongJin Lee",
+	"meta_default_description": "A personal website of HyeongJin Lee.",
+	"lang_en": "English",
+	"lang_ko": "Korean",
+	"lang_switch_label": "Language",
+	"home_posts_kicker": "Posts",
+	"home_role": "Software Engineer",
+	"nav_playground": "Playground",
+	"playground_subtitle": "Experiments and small builds",
+	"playground_view": "View →",
+	"post_back_home": "Back to home"
+}

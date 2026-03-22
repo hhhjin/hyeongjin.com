@@ -1,0 +1,14 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"meta_default_title": "이형진",
+	"meta_default_description": "이형진의 개인 웹사이트입니다.",
+	"lang_en": "English",
+	"lang_ko": "한국어",
+	"lang_switch_label": "언어",
+	"home_posts_kicker": "글",
+	"home_role": "소프트웨어 엔지니어",
+	"nav_playground": "플레이그라운드",
+	"playground_subtitle": "실험과 작은 빌드",
+	"playground_view": "보기 →",
+	"post_back_home": "홈으로"
+}
