@@ -108,6 +108,19 @@ export const urlPatterns = [
     ]
   },
   {
+    "pattern": "/posts/:slug",
+    "localized": [
+      [
+        "en",
+        "/posts/:slug"
+      ],
+      [
+        "ko",
+        "/ko/posts/:slug"
+      ]
+    ]
+  },
+  {
     "pattern": "/:path(.*)?",
     "localized": [
       [

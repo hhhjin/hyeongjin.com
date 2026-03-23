@@ -1,0 +1,150 @@
+---
+title: Motion은 어떻게 exit 애니메이션이 끝날 수 있게 할까?
+summary: React가 요소를 제거한 뒤에도 Motion이 어떻게 exit 애니메이션을 이어 가는지, 그리고 AnimatePresence가 왜 필요한지 설명합니다.
+date: 2026-03-22
+---
+
+import {
+  ExitExample,
+  ExitPresenceComparison,
+} from "./components";
+
+React 컴포넌트가 unmount되면 보통 DOM도 바로 제거됩니다.
+그런데 Motion은 어떻게 exit 애니메이션을 계속 재생할 수 있을까요?
+
+핵심은 React가 자식을 제거하기로 결정한 뒤에도 `AnimatePresence`가 그 자식을 잠깐 더 렌더링해 준다는 점입니다.
+덕분에 Motion은 사라지는 요소를 바로 없애지 않고 exit 애니메이션을 끝까지 실행할 수 있습니다.
+
+이 글에서는 그 흐름을 단계별로 살펴봅니다.
+
+<ExitExample />
+
+### AnimatePresence
+
+왜 `AnimatePresence`가 필요할까요?
+이걸 빼면 무슨 일이 일어날까요?
+
+<ExitPresenceComparison />
+
+`AnimatePresence`가 없으면 `open`이 `false`가 되는 즉시 `motion` 노드가 트리에서 사라집니다.
+그래서 `exit` 전환이 실행될 틈이 없고, 요소는 그냥 즉시 없어집니다.
+
+바로 그 점 때문에 `AnimatePresence`가 필요합니다.
+
+---
+
+그렇다면 `AnimatePresence`는 무엇을 할까요?
+
+개념적으로는 렌더 사이에서 자식 key를 비교하고, 사라지는 자식을 조금 더 유지한 뒤, exit 애니메이션이 모두 끝날 때까지 기다립니다.
+
+아래는 그 아이디어를 단순화한 예시입니다.
+
+```jsx
+function AnimatePresence({ children }) {
+  const presentKeys = children.map((child) => child.key)
+  const [renderedChildren, setRenderedChildren] = useState(children)
+
+  return (
+    <>
+      {renderedChildren.map((child) => {
+        const key = child.key
+        const isPresent = presentKeys.includes(key)
+
+        const onExit = () => {
+          // exit 처리가 끝난 뒤에만 목록에서 제거한다.
+          setRenderedChildren((prev) =>
+            prev.filter((child) => child.key !== key)
+          )
+        }
+
+        return (
+          <PresenceChild
+            key={key}
+            isPresent={isPresent}
+            onExitComplete={onExit}
+          >
+            {child}
+          </PresenceChild>
+        )
+      })}
+    </>
+  )
+}
+```
+
+여기서 중요한 것은 정확한 구현 디테일보다는 아이디어입니다.
+
+`AnimatePresence`는 자신만의 렌더 목록을 유지하고, 각 자식에게 `isPresent`로 아직 살아 있는지 알려 준 다음, 자식이 exit 작업을 끝냈다고 보고할 때까지 제거를 미룹니다.
+
+이제 단순화한 `PresenceChild`를 보겠습니다.
+
+```jsx
+const PresenceContext = createContext(null)
+
+function PresenceChild({ children, isPresent, onExitComplete }) {
+  // childId → 이 motion 노드가 exit를 끝냈는가? (끝나기 전까지 false)
+  const presenceChildren = useMemo(() => new Map(), [])
+
+  const context = useMemo(() => {
+    return {
+      isPresent,
+      register: (childId) => {
+        presenceChildren.set(childId, false)
+        return () => presenceChildren.delete(childId)
+      },
+      onExitComplete: (childId) => {
+        presenceChildren.set(childId, true)
+
+        // 등록된 모든 자손이 끝날 때까지 기다린다.
+        for (const isComplete of presenceChildren.values()) {
+          if (!isComplete) return
+        }
+
+        onExitComplete()
+      },
+    }
+  }, [isPresent, onExitComplete, presenceChildren])
+
+  return (
+    <PresenceContext.Provider value={context}>
+      {children}
+    </PresenceContext.Provider>
+  )
+}
+```
+
+`PresenceChild`는 하나의 exiting subtree를 감싸는 경계 역할을 합니다.
+
+이 컴포넌트의 일은 전체 라이프사이클을 다 관리하는 것이 아니라, 그 subtree 안에서 exit 완료 시점을 조율하는 것입니다.
+안쪽에 여러 `motion` 노드가 있다면, 모두 끝날 때까지 기다렸다가 그제야 `AnimatePresence`에 이 자식을 제거해도 된다고 알려 줍니다.
+
+이 상태는 `PresenceContext`를 통해 아래로 전달됩니다.
+
+```jsx
+function MotionDiv({ children, exit }) {
+  const id = useId()
+  const { isPresent, register, onExitComplete } = useContext(PresenceContext)
+
+  useEffect(() => {
+    return register(id)
+  }, [])
+
+  useEffect(() => {
+    if (!isPresent) {
+      // 부모가 떠나는 상태로 표시하면 exit를 실행하고 완료를 보고한다.
+      exitAnimation().then(() => onExitComplete(id))
+    }
+  }, [isPresent])
+
+  return <div>{children}</div>
+}
+```
+
+실제 구현은 훨씬 더 복잡하지만, 핵심 아이디어는 이렇습니다.
+
+- `motion` 노드는 주변 presence 경계에 자신을 등록합니다.
+- `isPresent`가 `false`가 되면 exit 애니메이션을 시작합니다.
+- 애니메이션이 끝나면 완료를 보고합니다.
+- 등록된 모든 노드가 끝나면 `AnimatePresence`가 자식을 최종적으로 제거할 수 있습니다.
+
+즉, React에서 exit 애니메이션이 가능해지는 핵심은 `AnimatePresence`가 제거 시점을 조금 늦춰 준다는 데 있습니다.

@@ -9,63 +9,76 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { contentCollectionsLiveReload } from "./content-tools/content-collections-live-reload";
 import { vitePluginShikiImport } from "./content-tools/vite-plugin-shiki-import";
 
-const config = defineConfig({
-	plugins: [
-		vitePluginShikiImport(),
-		devtools(),
-		contentCollections(),
-		contentCollectionsLiveReload(),
-		tsconfigPaths({ projects: ["./tsconfig.json"] }),
-		paraglideVitePlugin({
-			project: "./project.inlang",
-			outdir: "./src/paraglide",
-			outputStructure: "message-modules",
-			emitGitIgnore: false,
-			emitTsDeclarations: true,
-			strategy: ["url", "cookie", "preferredLanguage", "baseLocale"],
-			cookieName: "PARAGLIDE_LOCALE",
-			urlPatterns: [
-				{
-					pattern: "/",
-					localized: [
-						["en", "/"],
-						["ko", "/ko"],
-					],
-				},
-				{
-					pattern: "/about",
-					localized: [
-						["en", "/about"],
-						["ko", "/ko/about"],
-					],
-				},
-				{
-					pattern: "/playground",
-					localized: [
-						["en", "/playground"],
-						["ko", "/playground"],
-					],
-				},
-				{
-					pattern: "/playground/:slug",
-					localized: [
-						["en", "/playground/:slug"],
-						["ko", "/playground/:slug"],
-					],
-				},
-				{
-					pattern: "/:path(.*)?",
-					localized: [
-						["en", "/:path(.*)?"],
-						["ko", "/ko/:path(.*)?"],
-					],
-				},
-			],
-		}),
-		tailwindcss(),
-		tanstackStart(),
-		viteReact(),
-	],
+const config = defineConfig(({ mode }) => {
+	const isTest = mode === "test";
+
+	return {
+		plugins: [
+			vitePluginShikiImport(),
+			devtools(),
+			contentCollections({
+				isEnabled: (config) => config.mode !== "test",
+			}),
+			...(!isTest ? [contentCollectionsLiveReload()] : []),
+			tsconfigPaths({ projects: ["./tsconfig.json"] }),
+			paraglideVitePlugin({
+				project: "./project.inlang",
+				outdir: "./src/paraglide",
+				outputStructure: "message-modules",
+				emitGitIgnore: false,
+				emitTsDeclarations: true,
+				strategy: ["url", "cookie", "preferredLanguage", "baseLocale"],
+				cookieName: "PARAGLIDE_LOCALE",
+				urlPatterns: [
+					{
+						pattern: "/",
+						localized: [
+							["en", "/"],
+							["ko", "/ko"],
+						],
+					},
+					{
+						pattern: "/about",
+						localized: [
+							["en", "/about"],
+							["ko", "/ko/about"],
+						],
+					},
+					{
+						pattern: "/playground",
+						localized: [
+							["en", "/playground"],
+							["ko", "/playground"],
+						],
+					},
+					{
+						pattern: "/playground/:slug",
+						localized: [
+							["en", "/playground/:slug"],
+							["ko", "/playground/:slug"],
+						],
+					},
+					{
+						pattern: "/posts/:slug",
+						localized: [
+							["en", "/posts/:slug"],
+							["ko", "/ko/posts/:slug"],
+						],
+					},
+					{
+						pattern: "/:path(.*)?",
+						localized: [
+							["en", "/:path(.*)?"],
+							["ko", "/ko/:path(.*)?"],
+						],
+					},
+				],
+			}),
+			tailwindcss(),
+			tanstackStart(),
+			viteReact(),
+		],
+	};
 });
 
 export default config;

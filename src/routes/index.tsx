@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { buttonVariants } from "@/components/ui/button";
-import { publishedPosts } from "@/lib/posts";
+import { listPublishedPosts } from "@/lib/posts";
 import { m } from "@/paraglide/messages";
+import { getLocale } from "@/paraglide/runtime";
 
 export const Route = createFileRoute("/")({ component: HomePage });
 
 function HomePage() {
-	const sorted = [...publishedPosts].sort(
+	const sorted = [...listPublishedPosts(getLocale())].sort(
 		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
 	);
 

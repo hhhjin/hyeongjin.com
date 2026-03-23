@@ -2,12 +2,37 @@ import { MDXContent } from "@content-collections/mdx/react";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { buttonVariants } from "@/components/ui/button";
-import { publishedPosts } from "@/lib/posts";
+import { getPublishedPost } from "@/lib/posts";
+import { m } from "@/paraglide/messages";
+import { getLocale } from "@/paraglide/runtime";
 import "@/styles/post.css";
 
+type PostRouteLoaderData = {
+	post: NonNullable<ReturnType<typeof getPublishedPost>>;
+};
+
 export const Route = createFileRoute("/posts/$slug")({
-	loader: ({ params }) => {
-		const post = publishedPosts.find((p) => p.slug === params.slug);
+	head: ({ loaderData }: { loaderData?: PostRouteLoaderData }) => {
+		const post = loaderData?.post;
+
+		if (!post) {
+			return { meta: [] };
+		}
+
+		return {
+			meta: [
+				{
+					title: post.title,
+				},
+				{
+					name: "description",
+					content: post.summary,
+				},
+			],
+		};
+	},
+	loader: ({ params }): PostRouteLoaderData => {
+		const post = getPublishedPost(params.slug, getLocale());
 		if (!post) throw notFound();
 		return { post };
 	},
@@ -15,13 +40,15 @@ export const Route = createFileRoute("/posts/$slug")({
 });
 
 function PostPage() {
-	const { post } = Route.useLoaderData();
+	const { post } = Route.useLoaderData() as PostRouteLoaderData;
 
 	return (
 		<main className="page-wrap">
 			<article>
 				<Link
 					to="/"
+					aria-label={m.post_back_home()}
+					title={m.post_back_home()}
 					className={buttonVariants({ variant: "secondary", size: "icon" })}
 				>
 					<IconArrowLeft />

@@ -4,6 +4,8 @@ import path from "node:path";
 import { defineCollection, defineConfig } from "@content-collections/core";
 import { z } from "zod";
 import { compilePostMdx } from "./content-tools/compile-post-mdx";
+import { parsePostFileLocale } from "./src/lib/post-locales";
+import { getCanonicalPostSlug } from "./src/lib/post-slugs";
 
 async function findTsxFilesUnderPostDir(postDir: string) {
 	const results: Array<{ importPath: string; fullPath: string }> = [];
@@ -34,63 +36,81 @@ async function findTsxFilesUnderPostDir(postDir: string) {
 	return results;
 }
 
-const posts = defineCollection({
-	name: "posts",
-	directory: "./src/content/posts",
-	include: "**/post.{md,mdx}",
-	schema: z.object({
-		title: z.string(),
-		summary: z.string(),
-		date: z.string(),
-		draft: z.boolean().optional(),
-		content: z.string(),
-	}),
-	transform: async (document, context) => {
-		const collectionRoot = path.resolve(
-			process.cwd(),
-			context.collection.directory,
-		);
-		const dir = path.resolve(collectionRoot, document._meta.directory);
-		const tsxFiles = await findTsxFilesUnderPostDir(dir);
-		const sharedComponentsDir = path.join(
-			collectionRoot,
-			"..",
-			"shared",
-			"components",
-		);
-		const sharedEntries = await fsPromises
-			.readdir(sharedComponentsDir)
-			.catch(() => [] as string[]);
+const posts = (() => {
+	const seenVariants = new Map<string, string>();
 
-		const mdx = await compilePostMdx(document, {
-			cwd: dir,
-			files: (appender) => {
-				for (const name of sharedEntries) {
-					if (name.endsWith(".tsx") || name.endsWith(".ts")) {
-						appender.file(
-							`../../shared/components/${name}`,
-							path.join(sharedComponentsDir, name),
-						);
+	return defineCollection({
+		name: "posts",
+		directory: "./src/content/posts",
+		include: "**/post*.{md,mdx}",
+		schema: z.object({
+			title: z.string(),
+			summary: z.string(),
+			date: z.string(),
+			draft: z.boolean().optional(),
+			content: z.string(),
+		}),
+		transform: async (document, context) => {
+			const collectionRoot = path.resolve(
+				process.cwd(),
+				context.collection.directory,
+			);
+			const dir = path.resolve(collectionRoot, document._meta.directory);
+			const tsxFiles = await findTsxFilesUnderPostDir(dir);
+			const sharedComponentsDir = path.join(
+				collectionRoot,
+				"..",
+				"shared",
+				"components",
+			);
+			const sharedEntries = await fsPromises
+				.readdir(sharedComponentsDir)
+				.catch(() => [] as string[]);
+
+			const mdx = await compilePostMdx(document, {
+				cwd: dir,
+				files: (appender) => {
+					for (const name of sharedEntries) {
+						if (name.endsWith(".tsx") || name.endsWith(".ts")) {
+							appender.file(
+								`../../shared/components/${name}`,
+								path.join(sharedComponentsDir, name),
+							);
+						}
 					}
-				}
-				for (const { importPath, fullPath } of tsxFiles) {
-					appender.file(importPath, fullPath);
-				}
-			},
-		});
-		const dirSegments = document._meta.directory
-			.replaceAll("\\", "/")
-			.split("/")
-			.filter(Boolean);
-		const slug =
-			dirSegments.at(-1) ?? document._meta.fileName.replace(/\.(md|mdx)$/i, "");
-		return {
-			...document,
-			slug,
-			mdx,
-		};
-	},
-});
+					for (const { importPath, fullPath } of tsxFiles) {
+						appender.file(importPath, fullPath);
+					}
+				},
+			});
+
+			const canonicalSlug = getCanonicalPostSlug(
+				document._meta.directory,
+				document._meta.fileName,
+			);
+			const locale = parsePostFileLocale(document._meta.fileName);
+			const variantKey = `${canonicalSlug}:${locale}`;
+			const currentPath = document._meta.filePath.replaceAll("\\", "/");
+			const previousPath = seenVariants.get(variantKey);
+
+			if (previousPath && previousPath !== currentPath) {
+				throw new Error(
+					`Duplicate post variant "${variantKey}" found in "${previousPath}" and "${currentPath}".`,
+				);
+			}
+
+			seenVariants.set(variantKey, currentPath);
+
+			return {
+				...document,
+				canonicalSlug,
+				locale,
+				slug: canonicalSlug,
+				mdx,
+			};
+		},
+	});
+})();
 
 export default defineConfig({
 	content: [posts],
