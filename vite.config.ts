@@ -40,24 +40,17 @@ const config = defineConfig(({ mode }) => {
 						],
 					},
 					{
-						pattern: "/about",
-						localized: [
-							["en", "/about"],
-							["ko", "/ko/about"],
-						],
-					},
-					{
 						pattern: "/playground",
 						localized: [
 							["en", "/playground"],
-							["ko", "/playground"],
+							["ko", "/ko/playground"],
 						],
 					},
 					{
 						pattern: "/playground/:slug",
 						localized: [
 							["en", "/playground/:slug"],
-							["ko", "/playground/:slug"],
+							["ko", "/ko/playground/:slug"],
 						],
 					},
 					{

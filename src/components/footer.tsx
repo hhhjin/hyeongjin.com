@@ -45,17 +45,17 @@ export function Footer() {
 						/>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end" className="min-w-36">
-						{locales.map((loc) => (
-							<DropdownMenuItem
-								key={loc}
-								disabled={loc === current}
-								onClick={() => {
-									void setLocale(loc);
-								}}
-							>
-								{nativeLanguageLabel(loc)}
-							</DropdownMenuItem>
-						))}
+						{locales.map((loc) => {
+							return (
+								<DropdownMenuItem
+									key={loc}
+									disabled={loc === current}
+									onClick={() => setLocale(loc)}
+								>
+									{nativeLanguageLabel(loc)}
+								</DropdownMenuItem>
+							);
+						})}
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</div>

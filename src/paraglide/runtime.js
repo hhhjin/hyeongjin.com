@@ -69,19 +69,6 @@ export const urlPatterns = [
     ]
   },
   {
-    "pattern": "/about",
-    "localized": [
-      [
-        "en",
-        "/about"
-      ],
-      [
-        "ko",
-        "/ko/about"
-      ]
-    ]
-  },
-  {
     "pattern": "/playground",
     "localized": [
       [
@@ -90,7 +77,7 @@ export const urlPatterns = [
       ],
       [
         "ko",
-        "/playground"
+        "/ko/playground"
       ]
     ]
   },
@@ -103,7 +90,7 @@ export const urlPatterns = [
       ],
       [
         "ko",
-        "/playground/:slug"
+        "/ko/playground/:slug"
       ]
     ]
   },
