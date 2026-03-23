@@ -1,3 +1,4 @@
+import { cloudflare } from "@cloudflare/vite-plugin";
 import contentCollections from "@content-collections/vite";
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import tailwindcss from "@tailwindcss/vite";
@@ -14,6 +15,7 @@ const config = defineConfig(({ mode }) => {
 
 	return {
 		plugins: [
+			cloudflare({ viteEnvironment: { name: "ssr" } }),
 			vitePluginShikiImport(),
 			devtools(),
 			contentCollections({
