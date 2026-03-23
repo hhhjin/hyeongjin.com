@@ -2,6 +2,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { Footer } from "@/components/footer";
+import { NotFound } from "@/components/not-found";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
 import appCss from "../styles/globals.css?url";
@@ -36,6 +37,7 @@ export const Route = createRootRoute({
 		],
 	}),
 	shellComponent: RootDocument,
+	notFoundComponent: NotFound,
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {

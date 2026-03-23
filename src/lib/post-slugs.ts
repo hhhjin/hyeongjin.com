@@ -1,9 +1,5 @@
 function getLastPathSegment(pathLike: string) {
-	return pathLike
-		.replaceAll("\\", "/")
-		.split("/")
-		.filter(Boolean)
-		.at(-1);
+	return pathLike.replaceAll("\\", "/").split("/").filter(Boolean).at(-1);
 }
 
 export function stripPostOrderPrefix(slug: string) {
