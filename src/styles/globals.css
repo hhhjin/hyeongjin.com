@@ -133,6 +133,6 @@
 
 @layer components {
 	.page-wrap {
-		@apply mx-auto w-full max-w-2xl px-4 pb-8 pt-8 md:pt-24;
+		@apply mx-auto w-full max-w-2xl px-4 py-8 md:py-24;
 	}
 }

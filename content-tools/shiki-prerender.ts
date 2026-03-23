@@ -4,6 +4,8 @@ import type { Plugin as EsbuildPlugin } from "esbuild";
 import type { BundledLanguage } from "shiki";
 import { createHighlighter } from "shiki";
 
+import { withDataLanguageOnPreAndCode } from "../src/lib/highlight-data-language-html.ts";
+
 /** Grammars loaded once for all `?shiki` imports (extend when you add new languages). */
 const BUNDLED_LANGS = [
 	"tsx",
@@ -47,13 +49,14 @@ export function parseShikiImportRequest(
 
 export async function renderShikiHtml(code: string, lang: string) {
 	const h = await getHighlighter();
-	return h.codeToHtml(code, {
+	const html = await h.codeToHtml(code, {
 		lang: lang as BundledLanguage,
 		themes: {
 			light: "github-light",
 			dark: "github-dark",
 		},
 	});
+	return withDataLanguageOnPreAndCode(html, lang);
 }
 
 export function esbuildShikiImportPlugin(): EsbuildPlugin {

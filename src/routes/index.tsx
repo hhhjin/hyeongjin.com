@@ -23,7 +23,8 @@ function HomePage() {
 						to="/playground"
 						className={buttonVariants({ variant: "ghost" })}
 					>
-						{m.nav_playground()}<span>→</span>
+						{m.nav_playground()}
+						<span>→</span>
 					</Link>
 				</div>
 			</section>

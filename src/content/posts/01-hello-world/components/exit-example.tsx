@@ -6,7 +6,7 @@ export function ExitExample() {
 	const [open, setOpen] = useState(true);
 
 	return (
-		<div className="flex flex-col items-center gap-4">
+		<div className="text-center">
 			<Button onClick={() => setOpen((v) => !v)}>Toggle</Button>
 			<AnimatePresence>
 				{open ? (

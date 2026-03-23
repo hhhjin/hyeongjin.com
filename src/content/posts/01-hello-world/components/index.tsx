@@ -8,7 +8,7 @@ export { ExitPresenceComparison } from "./exit-presence-comparison";
 
 export function ExitExample() {
 	return (
-		<ExampleFrame codeHtml={exitExampleCodeHtml}>
+		<ExampleFrame className="items-start" codeHtml={exitExampleCodeHtml}>
 			<ExitExampleDemo />
 		</ExampleFrame>
 	);
@@ -16,7 +16,7 @@ export function ExitExample() {
 
 export function NoPresenceExample() {
 	return (
-		<ExampleFrame codeHtml={noPresenceExampleCodeHtml}>
+		<ExampleFrame className="items-start" codeHtml={noPresenceExampleCodeHtml}>
 			<NoPresenceExampleDemo />
 		</ExampleFrame>
 	);

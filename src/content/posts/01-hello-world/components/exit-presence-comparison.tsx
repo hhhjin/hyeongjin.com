@@ -4,9 +4,15 @@ import { NoPresenceExample } from "./no-presence-example";
 
 export function ExitPresenceComparison() {
 	return (
-		<ExampleFrame className="justify-center">
-			<ExitExample />
-			<NoPresenceExample />
+		<ExampleFrame className="items-start gap-16">
+			<div>
+				<div>With AnimatePresence</div>
+				<ExitExample />
+			</div>
+			<div>
+				<div>Without AnimatePresence</div>
+				<NoPresenceExample />
+			</div>
 		</ExampleFrame>
 	);
 }

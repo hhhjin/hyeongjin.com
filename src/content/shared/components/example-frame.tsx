@@ -20,10 +20,10 @@ export function ExampleFrame({
 	const hasCode = Boolean(codeHtml?.trim());
 
 	return (
-		<div className="flex flex-col gap-2">
+		<div className="flex flex-col gap-2 my-10">
 			<div
 				className={cn(
-					"flex w-full min-h-32 gap-3 border border-border bg-[color-mix(in_oklch,var(--muted)_30%,transparent)] p-4 rounded-lg",
+					"flex items-center justify-center w-full min-h-32 gap-3 border border-border bg-[color-mix(in_oklch,var(--muted)_30%,transparent)] p-4 rounded-lg",
 					className,
 				)}
 			>

@@ -1,13 +1,15 @@
 import { IconCheck, IconCopy } from "@tabler/icons-react";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { withDataLanguageOnPreAndCode } from "@/lib/highlight-data-language-html";
 import { cn } from "@/lib/utils";
 
 export function CodeBlock({
 	codeHtml,
 	className,
 	id,
+	language,
 }: {
 	/**
 	 * Syntax-highlighted HTML (e.g. from `import html from "./snippet.tsx?shiki"`).
@@ -15,6 +17,8 @@ export function CodeBlock({
 	codeHtml: string;
 	className?: string;
 	id?: string;
+	/** When set, `data-language` is added on `<pre>` / `<code>` if not already present. */
+	language?: string;
 }) {
 	const [copied, setCopied] = useState(false);
 	const codeRef = useRef<HTMLDivElement>(null);
@@ -31,16 +35,16 @@ export function CodeBlock({
 		}
 	}
 
-	if (!codeHtml.trim()) return null;
+	const html = useMemo(() => {
+		if (!codeHtml.trim()) return "";
+		if (!language?.trim()) return codeHtml;
+		return withDataLanguageOnPreAndCode(codeHtml, language);
+	}, [codeHtml, language]);
+
+	if (!html) return null;
 
 	return (
-		<div
-			className={cn(
-				"relative max-h-[min(24rem,70vh)] overflow-auto rounded-md border border-border bg-background",
-				className,
-			)}
-			id={id}
-		>
+		<div className={cn("relative", className)} id={id}>
 			<div className="absolute right-1 top-1 z-10">
 				<Button
 					type="button"
@@ -52,9 +56,7 @@ export function CodeBlock({
 					{copied ? <IconCheck /> : <IconCopy />}
 				</Button>
 			</div>
-			<div className="text-sm leading-relaxed [&_pre.shiki]:m-0 [&_pre.shiki]:max-w-none [&_pre.shiki]:[tab-size:2] [&_pre.shiki]:rounded-md [&_pre.shiki]:border-0 [&_pre.shiki]:px-3 [&_pre.shiki]:pt-3 [&_pre.shiki]:pb-3 [&_pre.shiki]:font-mono [&_pre.shiki]:text-sm">
-				<div ref={codeRef} dangerouslySetInnerHTML={{ __html: codeHtml }} />
-			</div>
+			<div ref={codeRef} dangerouslySetInnerHTML={{ __html: html }} />
 		</div>
 	);
 }

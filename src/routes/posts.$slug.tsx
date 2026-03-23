@@ -29,7 +29,7 @@ function PostPage() {
 				<header className="my-8">
 					<h1 className="text-xl font-medium">{post.title}</h1>
 				</header>
-				<div className="mt-16 prose [&_hr]:my-16 [&_hr]:border-0 [&_hr]:bg-transparent [&_hr]:relative [&_hr]:h-6 [&_hr]:overflow-visible [&_hr]:before:absolute [&_hr]:before:left-1/2 [&_hr]:before:top-1/2 [&_hr]:before:size-1 [&_hr]:before:-translate-x-1/2 [&_hr]:before:-translate-y-1/2 [&_hr]:before:rounded-full [&_hr]:before:bg-current [&_hr]:before:content-['']">
+				<div className="mt-16 prose">
 					<MDXContent code={post.mdx} />
 				</div>
 			</article>
