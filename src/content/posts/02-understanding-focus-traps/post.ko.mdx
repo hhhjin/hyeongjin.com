@@ -1,0 +1,169 @@
+---
+title: Focus Trap은 무엇이고 왜 필요할까?
+summary: focus trap은 dialog 같은 활성 레이어 안에 키보드 포커스를 가둬 두는 동작입니다. 이 글에서는 그것이 무엇인지, 왜 중요한지, 그리고 어떻게 구현하는지의 기본 아이디어를 설명합니다.
+date: 2026-03-24
+---
+
+import { DialogFocusExample, TabFocusExample } from "./components";
+
+웹사이트를 만들 때 `Tab` 키가 어떻게 동작하는지 생각해 본 적이 있나요?
+
+아마 대부분은 별로 의식하지 않았을 겁니다.
+`button`이나 `input` 같은 요소는 기본적으로 탭 순서에 들어가 있기 때문입니다.
+
+키보드로 포커스를 받을 수 있어야 하는 다른 요소에는 `tabindex` 속성을 사용할 수 있습니다.
+
+<TabFocusExample />
+
+---
+
+그런데 여기에 `Dialog`가 등장하면 어떨까요?
+이것도 우리가 따로 신경 써야 하는 부분일까요?
+
+솔직히 말하면 저도 이전에는 크게 생각해 본 적이 없었습니다.
+
+이제 이렇게 생각해 봅시다. dialog가 열려 있을 때 사용자가 그 바깥 요소와도 계속 상호작용할 수 있어야 할까요?
+아마 그렇지 않을 겁니다. dialog가 열리면 보통 사용자는 dialog 안의 요소와만 상호작용할 수 있기를 기대합니다.
+
+즉, `Tab` 키 이동을 포함한 키보드 포커스는 dialog 안에 계속 머물러야 합니다.
+이 동작을 `focus trap`이라고 부릅니다.
+
+<DialogFocusExample />
+
+dialog가 열려 있는 동안에도 포커스가 바깥으로 빠져나갈 수 있다면, 사용자는 더 이상 하나의 고립된 레이어와 상호작용하는 것이 아니게 됩니다.
+화면상으로는 dialog가 활성 상태처럼 보이지만, 실제 키보드 포커스는 뒤에 있는 링크나 버튼, 입력 필드로 이동할 수 있습니다.
+
+이러면 사용자가 보는 것과 브라우저가 실제로 하는 일이 서로 어긋나게 됩니다.
+특히 키보드 사용자나 보조 기술 사용자에게는 이런 불일치가 매우 빠르게 혼란으로 이어질 수 있습니다.
+
+제대로 된 focus trap은 보통 세 가지를 보장해야 합니다.
+
+1. dialog가 열릴 때 포커스가 dialog 안으로 이동한다.
+2. `Tab`과 `Shift+Tab` 이동이 dialog 안에 머문다.
+3. dialog가 닫히면 포커스가 다시 트리거 요소로 돌아간다.
+
+---
+
+여기까지 들으면 구현이 꽤 많아 보이지만, 실제로 컴포넌트에 추가되는 코드는 아주 작게 유지할 수 있습니다.
+
+간단한 예제를 보면서 필요한 연결이 얼마나 적은지 살펴보겠습니다.
+
+```jsx
+import { useRef, useState } from "react"
+import { useFocusTrap } from "./use-focus-trap"
+
+export function Dialog() {
+	const [open, setOpen] = useState(false)
+	const triggerRef = useRef(null)
+	const dialogRef = useRef(null)
+
+	useFocusTrap({
+		containerRef: dialogRef,
+		enabled: open,
+		returnFocusRef: triggerRef,
+	})
+
+	return (
+		<>
+			<button ref={triggerRef} onClick={() => setOpen(true)}>
+				Open dialog
+			</button>
+
+			{open && (
+				<div ref={dialogRef} role="dialog" aria-modal="true">
+					<input placeholder="Name" />
+					<button>Cancel</button>
+					<button onClick={() => setOpen(false)}>Save</button>
+				</div>
+			)}
+		</>
+	);
+}
+```
+
+겉으로 보면 훨씬 이해하기 쉽습니다.
+dialog 컴포넌트는 사실상 이렇게 말하고 있을 뿐입니다. "이 레이어가 열려 있는 동안에는 이 컨테이너 안에 포커스를 가두고, 닫히면 트리거로 포커스를 되돌려라."
+
+그렇다면 `useFocusTrap`은 실제로 어떻게 동작할까요?
+
+hook 안의 기본 아이디어도 생각보다 단순합니다.
+
+1. dialog 안의 포커스 가능한 요소를 모두 찾는다.
+2. `Tab` 키 입력을 감지한다.
+3. 포커스가 dialog를 벗어나려 하면 첫 번째나 마지막 요소로 다시 돌려놓는다.
+
+```jsx
+import { useEffect } from "react"
+
+const FOCUSABLE_SELECTOR = [
+	'a[href]',
+	'button:not([disabled])',
+	'input:not([disabled])',
+	'select:not([disabled])',
+	'textarea:not([disabled])',
+	'[tabindex]:not([tabindex="-1"])',
+].join(", ")
+
+export function useFocusTrap({
+	containerRef,
+	enabled,
+	returnFocusRef,
+}) {
+	useEffect(() => {
+		if (!enabled || !containerRef.current) return
+
+		const dialog = containerRef.current
+		// 키보드 사용자가 실제로 Tab으로 이동할 수 있는 요소를 모은다.
+		const elements = Array.from(
+			dialog.querySelectorAll(FOCUSABLE_SELECTOR),
+		)
+
+		const first = elements[0]
+		const last = elements[elements.length - 1]
+
+		first?.focus()
+
+		function handleKeyDown(event) {
+			if (event.key !== "Tab" || !first || !last) return
+
+			// 포커스가 dialog를 벗어나려 하면 반대쪽 끝으로 순환시킨다.
+			if (event.shiftKey && document.activeElement === first) {
+				event.preventDefault()
+				last.focus()
+			} else if (!event.shiftKey && document.activeElement === last) {
+				event.preventDefault()
+				first.focus()
+			}
+		}
+
+		dialog.addEventListener("keydown", handleKeyDown)
+
+		return () => {
+			dialog.removeEventListener("keydown", handleKeyDown)
+			// dialog를 연 버튼으로 포커스를 복원한다.
+			returnFocusRef.current?.focus()
+		};
+	}, [containerRef, enabled, returnFocusRef])
+}
+```
+
+여기서 핵심은 두 부분입니다.
+
+첫째, hook이 실행되면 dialog 안의 상호작용 가능한 요소를 수집하고 첫 번째 요소로 포커스를 옮깁니다.
+덕분에 키보드 상호작용이 dialog 뒤 어딘가가 아니라 올바른 위치에서 시작됩니다.
+
+둘째, `Tab`과 `Shift + Tab`을 감지합니다.
+사용자가 마지막 요소 다음으로 앞으로 이동하려 하면 포커스는 다시 첫 번째 요소로 돌아갑니다.
+반대로 첫 번째 요소 이전으로 뒤로 이동하려 하면 포커스는 마지막 요소로 이동합니다.
+
+이 순환이 바로 focus trap의 핵심이고, cleanup 단계는 dialog가 닫힐 때 포커스를 다시 트리거로 돌려놓는 역할을 합니다.
+
+이 예제는 의도적으로 작게 만들었지만, 실제 프로덕션 코드에서는 보통 조금 더 고려할 것이 있습니다.
+
+1. 숨겨진 요소는 무시해야 한다.
+2. dialog 안에 포커스 가능한 자식이 하나도 없는 경우를 처리해야 한다.
+3. `Escape`로 dialog를 닫는 동작도 지원해야 한다.
+4. 애니메이션 때문에 dialog가 나중에 unmount되더라도 포커스를 안정적으로 복원해야 한다.
+
+그래서 많은 UI 라이브러리는 focus trap을 기본 기능으로 포함하고 있기도 합니다.
+하지만 핵심 아이디어는 같습니다. 활성 레이어가 닫힐 때까지 키보드 포커스를 그 안에 머물게 하는 것입니다.

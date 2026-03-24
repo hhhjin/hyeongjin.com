@@ -1,0 +1,168 @@
+---
+title: Understanding Focus Traps
+summary: A focus trap keeps keyboard focus inside an active layer like a dialog. This post explains what it is, why it matters, and the basic idea behind implementing it.
+date: 2026-03-24
+---
+
+import { DialogFocusExample, TabFocusExample } from "./components";
+
+Have you ever thought about how the Tab key behaves when building a website?
+
+Most people probably have not, because elements like `button` and `input` are already included in the tab order by default.
+
+For other elements that need to be focusable with the keyboard, you can use the `tabindex` attribute.
+
+<TabFocusExample />
+
+---
+
+But What happens when a `Dialog` enters the picture?
+Is that something we need to think about?
+
+To be honest, I had not really thought about it before either.
+
+Now consider this: when a dialog opens, should users still be able to interact with elements outside it?
+Probably not. Once a dialog is open, users generally expect to interact only with the elements inside the dialog.
+
+That means keyboard focus, including Tab key navigation, should stay trapped within the dialog.
+This behavior is called `focus trap`.
+
+<DialogFocusExample />
+
+If focus can move outside the dialog while it is open, the user is no longer interacting with a single, isolated layer.
+Visually, the dialog appears active, but keyboard focus may land on links, buttons, or form fields behind it.
+
+This creates a mismatch between what users see and what the browser is doing.
+For keyboard and assistive technology users, that mismatch can be confusing very quickly.
+
+A proper focus trap usually needs to guarantee three things:
+
+1. Focus moves into the dialog when it opens.
+2. Tab and Shift+Tab stay within the dialog.
+3. Focus returns to the trigger element when the dialog closes.
+
+---
+
+Implementing all of that sounds like a lot, yet the component code you add can stay quite small.
+
+Let's walk through a minimal example and see how little wiring it takes.
+
+```jsx
+import { useRef, useState } from "react"
+import { useFocusTrap } from "./use-focus-trap"
+
+export function Dialog() {
+	const [open, setOpen] = useState(false)
+	const triggerRef = useRef(null)
+	const dialogRef = useRef(null)
+
+	useFocusTrap({
+		containerRef: dialogRef,
+		enabled: open,
+		returnFocusRef: triggerRef,
+	})
+
+	return (
+		<>
+			<button ref={triggerRef} onClick={() => setOpen(true)}>
+				Open dialog
+			</button>
+
+			{open && (
+				<div ref={dialogRef} role="dialog" aria-modal="true">
+					<input placeholder="Name" />
+					<button>Cancel</button>
+					<button onClick={() => setOpen(false)}>Save</button>
+				</div>
+			)}
+		</>
+	);
+}
+```
+
+At a glance, this is much easier to understand.
+The dialog component just says: "when this layer is open, keep focus inside this container, and restore focus to the trigger when it closes."
+
+So how does `useFocusTrap` actually work?
+
+The basic idea inside the hook is still simpler than it sounds:
+
+1. Find all focusable elements inside the dialog.
+2. Watch for the `Tab` key.
+3. If focus tries to leave the dialog, move it back to the first or last element.
+
+```jsx
+import { useEffect } from "react"
+
+const FOCUSABLE_SELECTOR = [
+	'a[href]',
+	'button:not([disabled])',
+	'input:not([disabled])',
+	'select:not([disabled])',
+	'textarea:not([disabled])',
+	'[tabindex]:not([tabindex="-1"])',
+].join(", ")
+
+export function useFocusTrap({
+	containerRef,
+	enabled,
+	returnFocusRef,
+}) {
+	useEffect(() => {
+		if (!enabled || !containerRef.current) return
+
+		const dialog = containerRef.current
+		// Collect the elements that keyboard users can actually move to with Tab.
+		const elements = Array.from(
+			dialog.querySelectorAll(FOCUSABLE_SELECTOR),
+		)
+
+		const first = elements[0]
+		const last = elements[elements.length - 1]
+
+		first?.focus()
+
+		function handleKeyDown(event) {
+			if (event.key !== "Tab" || !first || !last) return
+
+			// If focus is about to leave the dialog, wrap it to the other end.
+			if (event.shiftKey && document.activeElement === first) {
+				event.preventDefault()
+				last.focus()
+			} else if (!event.shiftKey && document.activeElement === last) {
+				event.preventDefault()
+				first.focus()
+			}
+		}
+
+		dialog.addEventListener("keydown", handleKeyDown)
+
+		return () => {
+			dialog.removeEventListener("keydown", handleKeyDown)
+			// Restore focus to the button that opened the dialog.
+			returnFocusRef.current?.focus()
+		};
+	}, [containerRef, enabled, returnFocusRef])
+}
+```
+
+There are only two key parts here.
+
+First, when the hook runs, it gathers the interactive elements inside the dialog and moves focus to the first one.
+That is what makes keyboard interaction start in the correct place instead of somewhere behind the dialog.
+
+Second, it watches for `Tab` and `Shift` + `Tab`.
+If the user tries to move forward past the last element, focus loops back to the first one.
+If the user tries to move backward past the first element, focus loops to the last one.
+
+That loop is the actual focus trap, and the cleanup step is what restores focus to the trigger when the dialog closes.
+
+This example is intentionally small, but in production code you usually need a bit more:
+
+1. Ignore hidden elements.
+2. Handle cases where the dialog has no focusable children.
+3. Support `Escape` to close the dialog.
+4. Restore focus reliably even when the dialog unmounts through animation.
+
+That is also why many UI libraries already include focus trapping out of the box.
+But the core idea is still the same: keep keyboard focus inside the active layer until that layer closes.
