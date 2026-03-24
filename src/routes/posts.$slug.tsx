@@ -1,6 +1,7 @@
 import { MDXContent } from "@content-collections/mdx/react";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { LanguageSelector } from "@/components/language-selector";
 import { buttonVariants } from "@/components/ui/button";
 import { getPublishedPost } from "@/lib/posts";
 import { m } from "@/paraglide/messages";
@@ -45,15 +46,18 @@ function PostPage() {
 	return (
 		<main className="page-wrap">
 			<article>
-				<Link
-					to="/"
-					aria-label={m.post_back_home()}
-					title={m.post_back_home()}
-					className={buttonVariants({ variant: "secondary", size: "icon" })}
-				>
-					<IconArrowLeft />
-				</Link>
-				<header className="my-8">
+				<div className="flex items-center justify-between">
+					<Link
+						to="/"
+						aria-label={m.post_back_home()}
+						title={m.post_back_home()}
+						className={buttonVariants({ variant: "secondary", size: "icon" })}
+					>
+						<IconArrowLeft />
+					</Link>
+					<LanguageSelector />
+				</div>
+				<header className="my-16">
 					<h1 className="text-xl font-medium">{post.title}</h1>
 				</header>
 				<div className="mt-16 prose">

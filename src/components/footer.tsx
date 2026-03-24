@@ -1,63 +1,23 @@
-import { IconChevronDown, IconLanguage } from "@tabler/icons-react";
-import { buttonVariants } from "@/components/ui/button";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import { m } from "@/paraglide/messages";
-import {
-	getLocale,
-	type Locale,
-	locales,
-	setLocale,
-} from "@/paraglide/runtime";
+import { useRouterState } from "@tanstack/react-router";
+import { LanguageSelector } from "@/components/language-selector";
 
-function nativeLanguageLabel(locale: Locale) {
-	if (locale === "en") return m.lang_en({}, { locale: "en" });
-	return m.lang_ko({}, { locale: "ko" });
-}
+type FooterProps = {
+	showLanguageSelector?: boolean;
+};
 
-export function Footer() {
-	const current = getLocale();
+export function Footer({ showLanguageSelector }: FooterProps) {
+	const pathname = useRouterState({
+		select: (state) => state.location.pathname,
+	});
+	const shouldShowLanguageSelector =
+		showLanguageSelector ?? !pathname.startsWith("/posts/");
 
 	return (
 		<footer className="mt-auto">
 			<div className="page-wrap flex justify-end py-6">
-				<DropdownMenu>
-					<DropdownMenuTrigger
-						type="button"
-						aria-label={m.lang_switch_label()}
-						className={cn(
-							buttonVariants({ variant: "ghost", size: "sm" }),
-							"text-muted-foreground hover:text-foreground",
-						)}
-					>
-						<IconLanguage className="size-4 shrink-0" aria-hidden />
-						<span className="max-w-48 truncate">
-							{nativeLanguageLabel(current)}
-						</span>
-						<IconChevronDown
-							className="size-4 shrink-0 opacity-60"
-							aria-hidden
-						/>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end" className="min-w-36">
-						{locales.map((loc) => {
-							return (
-								<DropdownMenuItem
-									key={loc}
-									disabled={loc === current}
-									onClick={() => setLocale(loc)}
-								>
-									{nativeLanguageLabel(loc)}
-								</DropdownMenuItem>
-							);
-						})}
-					</DropdownMenuContent>
-				</DropdownMenu>
+				{shouldShowLanguageSelector ? (
+					<LanguageSelector chevronDirection="up" contentAlign="end" />
+				) : null}
 			</div>
 		</footer>
 	);
