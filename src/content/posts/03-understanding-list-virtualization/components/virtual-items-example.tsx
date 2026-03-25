@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
+import type { Locale } from "@/paraglide/runtime";
 
 const ITEMS = Array.from({ length: 10000 }, (_, index) => ({
 	id: index,
-	label: `Item ${index + 1}`,
 }));
 
 const ITEM_HEIGHT = 48;
@@ -63,9 +63,36 @@ function getVirtualItems({
 	return measurements.slice(firstVisibleIndex, lastVisibleIndex);
 }
 
-export function VirtualItemsExample() {
+export function VirtualItemsExample({ lang }: { lang: Locale }) {
 	const [scrollTop, setScrollTop] = useState(0);
 	const measurements = useMemo(buildMeasurements, []);
+	const copy =
+		lang === "ko"
+			? {
+					visibleCalculation: "보이는 범위 계산",
+					scrollTop: "스크롤 상단 위치",
+					viewportHeight: "뷰포트 높이",
+					mountedRows: "마운트된 행",
+					range: "범위",
+					currentlyReturned: "현재 getVirtualItems()가 반환한 값",
+					renderedRows: "렌더링된 행",
+					start: "시작",
+					mountedNote: "왼쪽에 표시된 인덱스만 실제로 DOM에 마운트됩니다.",
+					itemLabel: (index: number) => `항목 ${index + 1}`,
+				}
+			: {
+					visibleCalculation: "Visible calculation",
+					scrollTop: "Scroll top",
+					viewportHeight: "Viewport height",
+					mountedRows: "Mounted rows",
+					range: "Range",
+					currentlyReturned: "Currently returned by getVirtualItems()",
+					renderedRows: "Rendered rows",
+					start: "start",
+					mountedNote:
+						"Only the indexes listed on the left are actually mounted in the DOM.",
+					itemLabel: (index: number) => `Item ${index + 1}`,
+				};
 
 	const virtualItems = useMemo(
 		() =>
@@ -81,15 +108,15 @@ export function VirtualItemsExample() {
 		<div className="flex w-full max-w-4xl flex-col gap-4">
 			<div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
 				<div className="p-3">
-					<p className="mb-3">Visible calculation</p>
+					<p className="mb-3">{copy.visibleCalculation}</p>
 					<dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-sm">
-						<dt>Scroll top</dt>
+						<dt>{copy.scrollTop}</dt>
 						<dd>{Math.round(scrollTop)}px</dd>
-						<dt>Viewport height</dt>
+						<dt>{copy.viewportHeight}</dt>
 						<dd>{VIEWPORT_HEIGHT}px</dd>
-						<dt>Mounted rows</dt>
+						<dt>{copy.mountedRows}</dt>
 						<dd>{virtualItems.length}</dd>
-						<dt>Range</dt>
+						<dt>{copy.range}</dt>
 						<dd>
 							{virtualItems[0]?.index ?? 0} -{" "}
 							{virtualItems[virtualItems.length - 1]?.index ?? 0}
@@ -97,9 +124,7 @@ export function VirtualItemsExample() {
 					</dl>
 
 					<div className="mt-4">
-						<p className="mb-2 text-sm">
-							Currently returned by getVirtualItems()
-						</p>
+						<p className="mb-2 text-sm">{copy.currentlyReturned}</p>
 						<div className="flex flex-wrap gap-2 text-xs">
 							{virtualItems.map((item) => (
 								<span className="rounded-full border px-2 py-1" key={item.key}>
@@ -111,7 +136,7 @@ export function VirtualItemsExample() {
 				</div>
 
 				<div className="p-3">
-					<p className="mb-2">Rendered rows</p>
+					<p className="mb-2">{copy.renderedRows}</p>
 					<div
 						className="relative overflow-y-auto rounded-lg border"
 						onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
@@ -133,17 +158,17 @@ export function VirtualItemsExample() {
 									}}
 								>
 									<span className="font-medium">
-										{ITEMS[item.index]?.label}
+										{copy.itemLabel(item.index)}
 									</span>
 									<span className="ml-auto text-xs text-muted-foreground">
-										start: {item.start}px
+										{copy.start}: {item.start}px
 									</span>
 								</div>
 							))}
 						</div>
 					</div>
 					<p className="mt-2 text-xs text-muted-foreground">
-						Only the indexes listed on the left are actually mounted in the DOM.
+						{copy.mountedNote}
 					</p>
 				</div>
 			</div>

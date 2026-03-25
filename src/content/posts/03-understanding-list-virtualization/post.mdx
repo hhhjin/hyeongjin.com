@@ -44,7 +44,7 @@ This is often a better starting point than measuring with `getBoundingClientRect
 
 In the example below, we create `10,000` items and calculate the spacer height with `estimatedItemHeight * items.length`.
 
-<MeasuredContainerExample />
+<MeasuredContainerExample lang="en" />
 
 ```jsx
 const items = Array.from({ length: 10000 }, (_, index) => ({
@@ -128,7 +128,7 @@ function getVirtualItems({ measurements, scrollTop, viewportHeight }) {
 
 This is the heart of virtualization: conceptually, the full list still exists, but `getVirtualItems()` returns only the subset that should be rendered right now.
 
-<VirtualItemsExample />
+<VirtualItemsExample lang="en" />
 
 ---
 
@@ -157,7 +157,7 @@ This is the same core idea used by virtualization libraries: look up the target 
 
 In the example below, you can jump to the top, middle, bottom, or any custom index and watch the virtualized rows update around the new scroll position.
 
-<ScrollToIndexExample />
+<ScrollToIndexExample lang="en" />
 
 ---
 

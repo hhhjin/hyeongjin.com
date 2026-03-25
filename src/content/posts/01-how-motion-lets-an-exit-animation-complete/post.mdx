@@ -15,13 +15,13 @@ The key is that even after React decides a component is gone, `AnimatePresence` 
 
 This post walks through that idea step by step.
 
-<ExitExample />
+<ExitExample lang="en" />
 
 ### AnimatePresence
 
 Why do we need `AnimatePresence`? What happens if we leave it out?
 
-<ExitPresenceComparison />
+<ExitPresenceComparison lang="en" />
 
 Without `AnimatePresence`, the `motion` node disappears from the tree as soon as `open` becomes `false`, so the `exit` transition never gets a chance to run. The element simply vanishes.
 

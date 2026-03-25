@@ -4,20 +4,31 @@ import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CodeBlock } from "@/content/shared/components/code-block";
 import { cn } from "@/lib/utils";
+import type { Locale } from "@/paraglide/runtime";
 
 export function ExampleFrame({
 	children,
 	codeHtml,
 	className,
+	lang,
 }: {
 	children: ReactNode;
 	/** Syntax-highlighted HTML (e.g. `?shiki` import). */
 	codeHtml?: string;
 	className?: string;
+	lang: Locale;
 }) {
 	const [showCode, setShowCode] = useState(false);
 	const codeRegionId = useId();
 	const hasCode = Boolean(codeHtml?.trim());
+	const codeToggleLabel =
+		lang === "ko"
+			? showCode
+				? "코드 숨기기"
+				: "코드 보기"
+			: showCode
+				? "Hide code"
+				: "View code";
 
 	return (
 		<div className="flex flex-col gap-2 my-10">
@@ -58,7 +69,7 @@ export function ExampleFrame({
 							aria-controls={codeRegionId}
 							onClick={() => setShowCode((v) => !v)}
 						>
-							{showCode ? "Hide code" : "View code"}
+							{codeToggleLabel}
 						</Button>
 					</div>
 				</>

@@ -44,7 +44,7 @@ viewport가 바뀔 때마다, 예를 들어 사용자가 스크롤할 때마다,
 
 아래 예제에서는 `10,000`개의 아이템을 만들고, `estimatedItemHeight * items.length`로 spacer 높이를 계산합니다.
 
-<MeasuredContainerExample />
+<MeasuredContainerExample lang="ko" />
 
 ```jsx
 const items = Array.from({ length: 10000 }, (_, index) => ({
@@ -128,7 +128,7 @@ function getVirtualItems({ measurements, scrollTop, viewportHeight }) {
 
 이 부분이 가상화의 핵심입니다. 개념적으로는 전체 리스트가 여전히 존재하지만, `getVirtualItems()`는 지금 렌더링해야 하는 부분집합만 반환합니다.
 
-<VirtualItemsExample />
+<VirtualItemsExample lang="ko" />
 
 ---
 
@@ -157,7 +157,7 @@ function scrollToIndex(index) {
 
 아래 예제에서는 맨 위, 중간, 맨 아래, 혹은 원하는 임의의 인덱스로 점프해 보면서 새로운 스크롤 위치 주변의 가상화된 행이 어떻게 업데이트되는지 볼 수 있습니다.
 
-<ScrollToIndexExample />
+<ScrollToIndexExample lang="ko" />
 
 ---
 
