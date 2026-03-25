@@ -9,11 +9,9 @@ import {
   ExitPresenceComparison,
 } from "./components";
 
-When a React component unmounts, its DOM is usually removed immediately.
-So how can Motion still play an exit animation?
+When a React component unmounts, its DOM is usually removed immediately. So how can Motion still play an exit animation?
 
-The key is that even after React decides a component is gone, `AnimatePresence` keeps rendering the exiting child just long enough for Motion to animate it out.
-Only after that animation finishes is the child actually removed.
+The key is that even after React decides a component is gone, `AnimatePresence` keeps rendering the exiting child just long enough for Motion to animate it out. Only after that animation finishes is the child actually removed.
 
 This post walks through that idea step by step.
 
@@ -21,13 +19,11 @@ This post walks through that idea step by step.
 
 ### AnimatePresence
 
-Why do we need `AnimatePresence`?
-What happens if we leave it out?
+Why do we need `AnimatePresence`? What happens if we leave it out?
 
 <ExitPresenceComparison />
 
-Without `AnimatePresence`, the `motion` node disappears from the tree as soon as `open` becomes `false`, so the `exit` transition never gets a chance to run.
-The element simply vanishes.
+Without `AnimatePresence`, the `motion` node disappears from the tree as soon as `open` becomes `false`, so the `exit` transition never gets a chance to run. The element simply vanishes.
 
 That is why `AnimatePresence` matters.
 
@@ -115,8 +111,7 @@ function PresenceChild({ children, isPresent, onExitComplete }) {
 
 `PresenceChild` acts as the boundary for a single exiting subtree.
 
-Its job is not to manage every detail of the lifecycle, but to coordinate exit completion within that subtree.
-If multiple `motion` nodes inside it need time to finish exiting, `PresenceChild` waits until all of them are done before telling `AnimatePresence` that the whole child can be removed.
+Its job is not to manage every detail of the lifecycle, but to coordinate exit completion within that subtree. If multiple `motion` nodes inside it need time to finish exiting, `PresenceChild` waits until all of them are done before telling `AnimatePresence` that the whole child can be removed.
 
 That state is passed down through `PresenceContext`.
 

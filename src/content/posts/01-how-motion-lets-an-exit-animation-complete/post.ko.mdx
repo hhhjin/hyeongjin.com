@@ -9,11 +9,9 @@ import {
   ExitPresenceComparison,
 } from "./components";
 
-React 컴포넌트가 unmount되면 보통 DOM도 바로 제거됩니다.
-그런데 Motion은 어떻게 exit 애니메이션을 계속 재생할 수 있을까요?
+React 컴포넌트가 unmount되면 보통 DOM도 바로 제거됩니다. 그런데 Motion은 어떻게 exit 애니메이션을 계속 재생할 수 있을까요?
 
-핵심은 React가 자식을 제거하기로 결정한 뒤에도 `AnimatePresence`가 그 자식을 잠깐 더 렌더링해 준다는 점입니다.
-덕분에 Motion은 사라지는 요소를 바로 없애지 않고 exit 애니메이션을 끝까지 실행할 수 있습니다.
+핵심은 React가 자식을 제거하기로 결정한 뒤에도 `AnimatePresence`가 그 자식을 잠깐 더 렌더링해 준다는 점입니다. 덕분에 Motion은 사라지는 요소를 바로 없애지 않고 exit 애니메이션을 끝까지 실행할 수 있습니다.
 
 이 글에서는 그 흐름을 단계별로 살펴봅니다.
 
@@ -21,13 +19,11 @@ React 컴포넌트가 unmount되면 보통 DOM도 바로 제거됩니다.
 
 ### AnimatePresence
 
-왜 `AnimatePresence`가 필요할까요?
-이걸 빼면 무슨 일이 일어날까요?
+왜 `AnimatePresence`가 필요할까요? 이걸 빼면 무슨 일이 일어날까요?
 
 <ExitPresenceComparison />
 
-`AnimatePresence`가 없으면 `open`이 `false`가 되는 즉시 `motion` 노드가 트리에서 사라집니다.
-그래서 `exit` 전환이 실행될 틈이 없고, 요소는 그냥 즉시 없어집니다.
+`AnimatePresence`가 없으면 `open`이 `false`가 되는 즉시 `motion` 노드가 트리에서 사라집니다. 그래서 `exit` 전환이 실행될 틈이 없고, 요소는 그냥 즉시 없어집니다.
 
 바로 그 점 때문에 `AnimatePresence`가 필요합니다.
 
@@ -115,8 +111,7 @@ function PresenceChild({ children, isPresent, onExitComplete }) {
 
 `PresenceChild`는 하나의 exiting subtree를 감싸는 경계 역할을 합니다.
 
-이 컴포넌트의 일은 전체 라이프사이클을 다 관리하는 것이 아니라, 그 subtree 안에서 exit 완료 시점을 조율하는 것입니다.
-안쪽에 여러 `motion` 노드가 있다면, 모두 끝날 때까지 기다렸다가 그제야 `AnimatePresence`에 이 자식을 제거해도 된다고 알려 줍니다.
+이 컴포넌트의 일은 전체 라이프사이클을 다 관리하는 것이 아니라, 그 subtree 안에서 exit 완료 시점을 조율하는 것입니다. 안쪽에 여러 `motion` 노드가 있다면, 모두 끝날 때까지 기다렸다가 그제야 `AnimatePresence`에 이 자식을 제거해도 된다고 알려 줍니다.
 
 이 상태는 `PresenceContext`를 통해 아래로 전달됩니다.
 

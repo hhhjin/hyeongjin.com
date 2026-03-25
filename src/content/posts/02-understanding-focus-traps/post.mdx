@@ -16,24 +16,19 @@ For other elements that need to be focusable with the keyboard, you can use the 
 
 ---
 
-But What happens when a `Dialog` enters the picture?
-Is that something we need to think about?
+But What happens when a `Dialog` enters the picture? Is that something we need to think about?
 
 To be honest, I had not really thought about it before either.
 
-Now consider this: when a dialog opens, should users still be able to interact with elements outside it?
-Probably not. Once a dialog is open, users generally expect to interact only with the elements inside the dialog.
+Now consider this: when a dialog opens, should users still be able to interact with elements outside it? Probably not. Once a dialog is open, users generally expect to interact only with the elements inside the dialog.
 
-That means keyboard focus, including Tab key navigation, should stay trapped within the dialog.
-This behavior is called `focus trap`.
+That means keyboard focus, including Tab key navigation, should stay trapped within the dialog. This behavior is called `focus trap`.
 
 <DialogFocusExample />
 
-If focus can move outside the dialog while it is open, the user is no longer interacting with a single, isolated layer.
-Visually, the dialog appears active, but keyboard focus may land on links, buttons, or form fields behind it.
+If focus can move outside the dialog while it is open, the user is no longer interacting with a single, isolated layer. Visually, the dialog appears active, but keyboard focus may land on links, buttons, or form fields behind it.
 
-This creates a mismatch between what users see and what the browser is doing.
-For keyboard and assistive technology users, that mismatch can be confusing very quickly.
+This creates a mismatch between what users see and what the browser is doing. For keyboard and assistive technology users, that mismatch can be confusing very quickly.
 
 A proper focus trap usually needs to guarantee three things:
 
@@ -80,8 +75,7 @@ export function Dialog() {
 }
 ```
 
-At a glance, this is much easier to understand.
-The dialog component just says: "when this layer is open, keep focus inside this container, and restore focus to the trigger when it closes."
+At a glance, this is much easier to understand. The dialog component just says: "when this layer is open, keep focus inside this container, and restore focus to the trigger when it closes."
 
 So how does `useFocusTrap` actually work?
 
@@ -148,12 +142,12 @@ export function useFocusTrap({
 
 There are only two key parts here.
 
-First, when the hook runs, it gathers the interactive elements inside the dialog and moves focus to the first one.
-That is what makes keyboard interaction start in the correct place instead of somewhere behind the dialog.
+First, when the hook runs, it gathers the interactive elements inside the dialog and moves focus to the first one. That is what makes keyboard interaction start in the correct place instead of somewhere behind the dialog.
 
 Second, it watches for `Tab` and `Shift` + `Tab`.
-If the user tries to move forward past the last element, focus loops back to the first one.
-If the user tries to move backward past the first element, focus loops to the last one.
+
+- If the user tries to move forward past the last element, focus loops back to the first one.
+- If the user tries to move backward past the first element, focus loops to the last one.
 
 That loop is the actual focus trap, and the cleanup step is what restores focus to the trigger when the dialog closes.
 
@@ -164,5 +158,4 @@ This example is intentionally small, but in production code you usually need a b
 3. Support `Escape` to close the dialog.
 4. Restore focus reliably even when the dialog unmounts through animation.
 
-That is also why many UI libraries already include focus trapping out of the box.
-But the core idea is still the same: keep keyboard focus inside the active layer until that layer closes.
+That is also why many UI libraries already include focus trapping out of the box. But the core idea is still the same: keep keyboard focus inside the active layer until that layer closes.
