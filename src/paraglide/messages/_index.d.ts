@@ -9,4 +9,6 @@ export * from "./nav_playground.js";
 export * from "./playground_subtitle.js";
 export * from "./playground_view.js";
 export * from "./post_back_home.js";
+export * from "./post_next.js";
+export * from "./post_previous.js";
 export type LocalizedString = import("../runtime.js").LocalizedString;

@@ -10,5 +10,7 @@
 	"nav_playground": "Playground",
 	"playground_subtitle": "Experiments and small builds",
 	"playground_view": "View →",
-	"post_back_home": "Back to home"
+	"post_back_home": "Back to home",
+	"post_next": "Next post",
+	"post_previous": "Previous post"
 }
