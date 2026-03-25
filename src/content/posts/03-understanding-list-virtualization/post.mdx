@@ -1,0 +1,190 @@
+---
+title: How List Virtualization Works
+summary: How virtualized lists keep scrolling feeling natural by preserving the full scroll space and rendering only the visible range.
+date: 2026-03-25
+---
+
+import {
+  MeasuredContainerExample,
+  ScrollToIndexExample,
+  VirtualItemsExample,
+} from "./components";
+
+Virtualization is one of the most useful optimization techniques for rendering large lists.
+
+When thousands of elements are mounted in the DOM at once, the browser has to spend much more time on layout, painting, and compositing. That extra work can make scrolling feel sluggish and reduce overall responsiveness.
+
+The core idea is simple: render only what the user can currently see. In other words, only the rows inside the viewport are actually mounted in the DOM.
+
+The tricky part is making that optimized list still feel like a normal one. Users expect the scrollbar size and scrolling behavior to match what they would see if every row were actually rendered.
+
+To make a virtualized list behave like a regular list, you need to manage two things:
+
+1. The total size of the container (to simulate the full scroll height)
+2. The absolute positions of the currently visible elements
+
+As the viewport changes, for example as the user scrolls, you recalculate which rows should be displayed based on the current scroll position.
+
+Let's walk through how that works.
+
+---
+
+## Estimating the total container size
+
+Before we decide which rows are visible, the scroll area itself needs to behave as if all of the rows already exist.
+
+If every item has the same height, one simple way to do that is:
+
+1. Pick an estimated row height.
+2. Multiply that value by `items.length`.
+
+That gives us the total scrollable height up front, even though we are not rendering the full list yet.
+
+This is often a better starting point than measuring with `getBoundingClientRect()` on mount, because you can size the spacer immediately and avoid an initial layout shift.
+
+In the example below, we create `10,000` items and calculate the spacer height with `estimatedItemHeight * items.length`.
+
+<MeasuredContainerExample />
+
+```jsx
+const items = Array.from({ length: 10000 }, (_, index) => ({
+  id: index,
+  label: `Item ${index + 1}`,
+}))
+
+const estimatedItemHeight = 48
+const containerHeight = estimatedItemHeight * items.length
+
+return (
+  <div style={{ overflow: "auto", height: 500 }}>
+    <div style={{ height: containerHeight }} />
+  </div>
+)
+```
+
+At this point, the browser can already show a correctly sized scrollbar. The visible rows are not mounted yet, but the container still occupies the same total height as a fully rendered list.
+
+If the estimate is slightly off, you can refine it later with real measurements. As a starting point, though, an estimate is often simpler and more stable.
+
+This is the first half of virtualization: preserve the full scroll space first, then render only the rows that intersect with the viewport.
+
+---
+
+## Determining which rows to render
+
+Once the total scroll space is in place, the next step is figuring out which rows intersect with the viewport.
+
+Because we are still assuming that every item has the same height, we can precompute a measurement record for every row.
+
+Each entry stores:
+
+1. `key`: the stable identity for that row
+2. `start`: where the row begins
+3. `end`: where the row ends
+4. `size`: the row height
+
+The actual row content can still come from `items[index]`. The measurement record only needs enough information to position that row correctly within the full scroll area.
+
+For example, the measurement list can look like this:
+
+```jsx
+const measurements = items.map((item, index) => {
+  const start = index * itemHeight
+  const end = start + itemHeight
+
+  return {
+    index,
+    key: item.id,
+    start,
+    end,
+    size: itemHeight,
+  }
+})
+```
+
+Then, whenever the user scrolls, we compare the viewport range against that table and keep only the matching rows.
+
+```jsx
+function getVirtualItems({ measurements, scrollTop, viewportHeight }) {
+  const viewportStart = scrollTop
+  const viewportEnd = scrollTop + viewportHeight
+
+  const firstVisibleIndex = measurements.findIndex(
+    (item) => item.end > viewportStart
+  )
+
+  let lastVisibleIndex = firstVisibleIndex
+
+  while (
+    lastVisibleIndex < measurements.length &&
+    measurements[lastVisibleIndex].start < viewportEnd
+  ) {
+    lastVisibleIndex += 1
+  }
+
+  return measurements.slice(firstVisibleIndex, lastVisibleIndex)
+}
+```
+
+This is the heart of virtualization: conceptually, the full list still exists, but `getVirtualItems()` returns only the subset that should be rendered right now.
+
+<VirtualItemsExample />
+
+---
+
+## Jumping to a specific row with `scrollToIndex`
+
+Once every row has a measurement record, jumping to a specific index becomes straightforward.
+
+You do not need to scan the DOM for that row. You already know where it should start, because `measurements[index].start` gives you the exact offset within the full scroll container.
+
+So a minimal `scrollToIndex()` can look like this:
+
+```jsx
+function scrollToIndex(index) {
+  const measurement = measurements[index]
+
+  if (!measurement) return
+
+  viewportElement.scrollTo({
+    top: measurement.start,
+    behavior: 'smooth',
+  })
+}
+```
+
+This is the same core idea used by virtualization libraries: look up the target row in the measurement list, convert that into a scroll offset, and move the scroll container.
+
+In the example below, you can jump to the top, middle, bottom, or any custom index and watch the virtualized rows update around the new scroll position.
+
+<ScrollToIndexExample />
+
+---
+
+In practice, you usually render more than just the strictly visible rows. Most implementations add a small `overscan` buffer before and after the viewport, so a few extra rows are already mounted just outside the visible area.
+
+Why is that useful? Because scrolling is continuous and fast. If rows are mounted only when they become exactly visible, users may briefly see empty gaps or content that appears a little too late during fast scrolling. `overscan` trades a small amount of extra DOM work for much smoother motion.
+
+The idea is simple:
+
+```jsx
+const overscan = 3
+
+const startIndex = Math.max(0, firstVisibleIndex - overscan)
+const endIndex = Math.min(
+  measurements.length,
+  lastVisibleIndex + overscan
+)
+
+return measurements.slice(startIndex, endIndex)
+```
+
+That is often enough for a solid first version.
+
+This is also where real-world virtualization starts to get more complicated:
+
+- If item heights are not fixed, you cannot rely on a single static measurement table forever.
+- If new items are inserted or existing ones are removed, the offsets for all following rows also need to be updated.
+- If an item's height changes after render, for example because an image loads or some content expands, you need to remeasure that row and recalculate the positions that come after it.
+
+So the basic idea of virtualization is straightforward: preserve the full scroll space, render only the visible range, and add a bit of `overscan` for smoothness. The hard part is dealing with measurement updates and all of the edge cases that appear once the list becomes dynamic.
