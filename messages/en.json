@@ -12,5 +12,11 @@
 	"playground_view": "View →",
 	"post_back_home": "Back to home",
 	"post_next": "Next post",
-	"post_previous": "Previous post"
+	"post_previous": "Previous post",
+	"signature_replay_title": "Signature Replay",
+	"signature_replay_summary": "Replays user's drawn signature with the exact speed and trajectory.",
+	"signature_replay_reset": "Clear",
+	"signature_replay_play": "Replay",
+	"signature_replay_playing": "Replaying...",
+	"signature_replay_desc": "Draw a signature using mouse or touch, and press the 'Replay' button."
 }

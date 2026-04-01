@@ -1,0 +1,31 @@
+import type { ComponentType } from "react";
+import { m } from "@/paraglide/messages";
+import {
+	SignatureReplay,
+	SignatureReplayThumbnail,
+} from "./works/signature-replay";
+
+export type PlaygroundThumbnailProps = { isHovering?: boolean };
+
+export type PlaygroundEntry = {
+	slug: string;
+	title: () => string;
+	summary: () => string;
+	cover?: string;
+	Thumbnail?: ComponentType<PlaygroundThumbnailProps>;
+	Component: ComponentType;
+};
+
+export const playgroundEntries: PlaygroundEntry[] = [
+	{
+		slug: "signature-replay",
+		title: m.signature_replay_title,
+		summary: m.signature_replay_summary,
+		Thumbnail: SignatureReplayThumbnail,
+		Component: SignatureReplay,
+	},
+];
+
+export function getPlaygroundEntry(slug: string): PlaygroundEntry | undefined {
+	return playgroundEntries.find((e) => e.slug === slug);
+}

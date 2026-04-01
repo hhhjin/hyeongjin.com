@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { m } from "@/paraglide/messages";
 import { playgroundEntries } from "@/playground/registry";
 
@@ -7,8 +8,9 @@ export const Route = createFileRoute("/playground/")({
 });
 
 function PlaygroundIndexPage() {
+	const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
 	const items = [...playgroundEntries].sort((a, b) =>
-		a.title.localeCompare(b.title),
+		a.title().localeCompare(b.title()),
 	);
 
 	return (
@@ -26,23 +28,27 @@ function PlaygroundIndexPage() {
 						<Link
 							to="/playground/$slug"
 							params={{ slug: item.slug }}
-							className="block h-full no-underline"
+							className="group block h-full no-underline"
+							onMouseEnter={() => setHoveredSlug(item.slug)}
+							onMouseLeave={() => setHoveredSlug(null)}
 						>
 							<article className="flex h-full flex-col">
-								{item.cover ? (
-									<div className="mb-4 aspect-video w-full overflow-hidden bg-muted">
+								<div className="mb-4 aspect-video w-full overflow-hidden rounded-lg border bg-muted transition-colors group-hover:border-foreground/50">
+									{item.Thumbnail ? (
+										<item.Thumbnail isHovering={hoveredSlug === item.slug} />
+									) : item.cover ? (
 										<img
 											src={item.cover}
 											alt=""
-											className="h-full w-full object-cover"
+											className="h-full w-full object-cover transition-transform group-hover:scale-105"
 										/>
-									</div>
-								) : null}
-								<h2 className="mb-2 text-lg font-semibold text-foreground">
-									{item.title}
+									) : null}
+								</div>
+								<h2 className="mb-2 text-lg font-medium text-foreground">
+									{item.title()}
 								</h2>
 								<p className="m-0 flex-1 text-sm text-muted-foreground">
-									{item.summary}
+									{item.summary()}
 								</p>
 								<span className="mt-4 text-xs font-medium text-muted-foreground">
 									{m.playground_view()}
