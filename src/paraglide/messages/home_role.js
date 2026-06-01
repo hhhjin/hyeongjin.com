@@ -6,17 +6,17 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Home_RoleInputs */
 
 const en_home_role = /** @type {(inputs: Home_RoleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Software Engineer`)
+	return /** @type {LocalizedString} */ (`Product Builder`)
 };
 
 const ko_home_role = /** @type {(inputs: Home_RoleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`소프트웨어 엔지니어`)
+	return /** @type {LocalizedString} */ (`프로덕트 빌더`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Software Engineer" |
+* | "Product Builder" |
 *
 * @param {Home_RoleInputs} inputs
 * @param {{ locale?: "en" | "ko" }} options
