@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import { m } from "@/paraglide/messages";
+import { Chat, ChatThumbnail } from "./works/chat";
 import {
 	SignatureReplay,
 	SignatureReplayThumbnail,
@@ -17,6 +18,13 @@ export type PlaygroundEntry = {
 };
 
 export const playgroundEntries: PlaygroundEntry[] = [
+	{
+		slug: "chat",
+		title: m.chat_title,
+		summary: m.chat_summary,
+		Thumbnail: ChatThumbnail,
+		Component: Chat,
+	},
 	{
 		slug: "signature-replay",
 		title: m.signature_replay_title,

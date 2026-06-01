@@ -11,6 +11,8 @@ export * from "./playground_view.js";
 export * from "./post_back_home.js";
 export * from "./post_next.js";
 export * from "./post_previous.js";
+export * from "./chat_title.js";
+export * from "./chat_summary.js";
 export * from "./signature_replay_title.js";
 export * from "./signature_replay_summary.js";
 export * from "./signature_replay_reset.js";

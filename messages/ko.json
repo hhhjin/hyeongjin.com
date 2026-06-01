@@ -13,6 +13,8 @@
 	"post_back_home": "홈으로",
 	"post_next": "다음 글",
 	"post_previous": "이전 글",
+	"chat_title": "Chat",
+	"chat_summary": "채팅 인터페이스에서 애니메이션, 성능 개선, 인터랙션 아이디어를 실험합니다.",
 	"signature_replay_title": "Signature Replay",
 	"signature_replay_summary": "유저가 그린 서명을 똑같은 속도와 궤적으로 다시 재생해서 보여줍니다.",
 	"signature_replay_reset": "초기화",
