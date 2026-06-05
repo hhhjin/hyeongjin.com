@@ -20,5 +20,7 @@
 	"signature_replay_reset": "Clear",
 	"signature_replay_play": "Replay",
 	"signature_replay_playing": "Replaying...",
-	"signature_replay_desc": "Draw a signature using mouse or touch, and press the 'Replay' button."
+	"signature_replay_desc": "Draw a signature using mouse or touch, and press the 'Replay' button.",
+	"voice_orb_title": "Voice Orb",
+	"voice_orb_summary": "A voice-state UI that turns synthetic speech energy into a fluid circular visual."
 }

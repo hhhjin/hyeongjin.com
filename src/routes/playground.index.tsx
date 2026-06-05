@@ -9,9 +9,6 @@ export const Route = createFileRoute("/playground/")({
 
 function PlaygroundIndexPage() {
 	const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
-	const items = [...playgroundEntries].sort((a, b) =>
-		a.title().localeCompare(b.title()),
-	);
 
 	return (
 		<main className="page-wrap">
@@ -23,7 +20,7 @@ function PlaygroundIndexPage() {
 			</header>
 
 			<ul className="m-0 grid list-none gap-8 p-0 sm:grid-cols-2 lg:grid-cols-3">
-				{items.map((item) => (
+				{playgroundEntries.map((item) => (
 					<li key={item.slug}>
 						<Link
 							to="/playground/$slug"

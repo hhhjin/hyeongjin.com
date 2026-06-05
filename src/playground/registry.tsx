@@ -5,6 +5,7 @@ import {
 	SignatureReplay,
 	SignatureReplayThumbnail,
 } from "./works/signature-replay";
+import { VoiceOrbEntry, VoiceOrbThumbnail } from "./works/voice-orb";
 
 export type PlaygroundThumbnailProps = { isHovering?: boolean };
 
@@ -18,6 +19,13 @@ export type PlaygroundEntry = {
 };
 
 export const playgroundEntries: PlaygroundEntry[] = [
+	{
+		slug: "voice-orb",
+		title: m.voice_orb_title,
+		summary: m.voice_orb_summary,
+		Thumbnail: VoiceOrbThumbnail,
+		Component: VoiceOrbEntry,
+	},
 	{
 		slug: "chat",
 		title: m.chat_title,
