@@ -5,6 +5,7 @@ import {
 	SignatureReplay,
 	SignatureReplayThumbnail,
 } from "./works/signature-replay";
+import { SkyCycleEntry, SkyCycleThumbnail } from "./works/sky-cycle";
 import { VoiceOrbEntry, VoiceOrbThumbnail } from "./works/voice-orb";
 
 export type PlaygroundThumbnailProps = { isHovering?: boolean };
@@ -19,6 +20,13 @@ export type PlaygroundEntry = {
 };
 
 export const playgroundEntries: PlaygroundEntry[] = [
+	{
+		slug: "sky-cycle",
+		title: m.sky_cycle_title,
+		summary: m.sky_cycle_summary,
+		Thumbnail: SkyCycleThumbnail,
+		Component: SkyCycleEntry,
+	},
 	{
 		slug: "voice-orb",
 		title: m.voice_orb_title,

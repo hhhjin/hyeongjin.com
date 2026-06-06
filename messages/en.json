@@ -21,6 +21,8 @@
 	"signature_replay_play": "Replay",
 	"signature_replay_playing": "Replaying...",
 	"signature_replay_desc": "Draw a signature using mouse or touch, and press the 'Replay' button.",
+	"sky_cycle_title": "Sky Cycle",
+	"sky_cycle_summary": "A scroll-driven sky gradient that shifts like the earth rotating through sunset.",
 	"voice_orb_title": "Voice Orb",
 	"voice_orb_summary": "A voice-state UI that turns synthetic speech energy into a fluid circular visual."
 }

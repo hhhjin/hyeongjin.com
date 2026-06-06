@@ -19,6 +19,8 @@ export * from "./signature_replay_reset.js";
 export * from "./signature_replay_play.js";
 export * from "./signature_replay_playing.js";
 export * from "./signature_replay_desc.js";
+export * from "./sky_cycle_title.js";
+export * from "./sky_cycle_summary.js";
 export * from "./voice_orb_title.js";
 export * from "./voice_orb_summary.js";
 export type LocalizedString = import("../runtime.js").LocalizedString;

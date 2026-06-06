@@ -21,6 +21,8 @@
 	"signature_replay_play": "재생",
 	"signature_replay_playing": "재생 중...",
 	"signature_replay_desc": "마우스나 터치를 이용해 서명을 그리고, '재생' 버튼을 눌러보세요.",
+	"sky_cycle_title": "Sky Cycle",
+	"sky_cycle_summary": "스크롤에 따라 지구가 자전하듯 일몰 하늘의 그라데이션이 변합니다.",
 	"voice_orb_title": "Voice Orb",
 	"voice_orb_summary": "말하는 듯한 에너지 변화를 부드러운 원형 비주얼로 보여주는 음성 상태 UI입니다."
 }
